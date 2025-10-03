@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* 👇 enable manual class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
+@keyframes fadeInTeacher {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeInStudent {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fadeInLogin {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes messagePopup {
+  0%   { opacity: 0; transform: translate(0%, -30px); }
+  20%  { opacity: 1; transform: translate(0%, 0); }
+  80%  { opacity: 1; transform: translate(0%, 0); }
+  100% { opacity: 0; transform: translate(0%, -30px); }
+}
