@@ -9,8 +9,7 @@ notes
 
 
 ## Screenshot
-------------------------------------------------------------------------------------------------------------------------------------------
-## Student Login
+##Student Login
 <img width="1918" height="866" alt="image" src="https://github.com/user-attachments/assets/4ee2fa4f-9286-4acd-87c7-c5d9826510c4" />
 ## Teacher Login
 <img width="1919" height="858" alt="image" src="https://github.com/user-attachments/assets/373be9f0-5b3f-45a6-be69-1ee419d5947a" />
