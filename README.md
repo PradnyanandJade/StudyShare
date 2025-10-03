@@ -2,4 +2,5 @@
 StudyShare – Classroom Notes Management System Developed a role-based web application enabling seamless collaboration between teachers and students.
 
 Class Diagram Of Backend : 
-<img width="876" height="706" alt="image" src="https://github.com/user-attachments/assets/9a93b761-df89-4ffe-a334-a00ea0c2a205" />
+<img width="863" height="645" alt="image" src="https://github.com/user-attachments/assets/b436eb72-53e2-4cd1-aacd-46eac153be08" />
+
