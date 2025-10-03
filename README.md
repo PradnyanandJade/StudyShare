@@ -11,26 +11,25 @@ notes
 # Screenshots (Dark Theme)
 
 ## Student Login
-<img width="1918" height="866" alt="image" src="https://github.com/user-attachments/assets/4ee2fa4f-9286-4acd-87c7-c5d9826510c4" />
+<img width="1919" height="864" alt="image" src="https://github.com/user-attachments/assets/ced87aef-bdf4-4539-9254-8de69bb4fb9c" />
 
 ## Teacher Login
-<img width="1919" height="858" alt="image" src="https://github.com/user-attachments/assets/373be9f0-5b3f-45a6-be69-1ee419d5947a" />
+<img width="1919" height="866" alt="image" src="https://github.com/user-attachments/assets/d27381bc-4071-455b-8226-af5ef02f7840" />
 
 ## Register User
-<img width="1917" height="860" alt="image" src="https://github.com/user-attachments/assets/d719649d-32db-4efb-9a0b-019ca5ba6374" />
+<img width="1919" height="862" alt="image" src="https://github.com/user-attachments/assets/6c58b032-5f61-42b8-b7df-300ef27040d5" />
 
 ## Student Home
-<img width="1919" height="864" alt="image" src="https://github.com/user-attachments/assets/ad523b74-a132-46ec-87d0-d970ed218e92" />
+<img width="1918" height="865" alt="image" src="https://github.com/user-attachments/assets/bb92ac3e-ea04-4a78-a37a-fb444226b5e2" />
 
 ## Student Class View
-<img width="1919" height="863" alt="image" src="https://github.com/user-attachments/assets/6f18889a-d8bc-4883-ac5f-69b2c3deb1d0" />
+<img width="1919" height="865" alt="image" src="https://github.com/user-attachments/assets/0c4150d7-ad83-483a-9027-eb3fcb57c78c" />
 
 ## Teacher Home 
-<img width="1919" height="859" alt="image" src="https://github.com/user-attachments/assets/b278e195-cf48-47f5-a80b-77f9edd4f27c" />
+<img width="1919" height="858" alt="image" src="https://github.com/user-attachments/assets/1e13591f-1226-416f-8d08-a5aea915e73c" />
 
 ## Teacher Class View
-<img width="1919" height="868" alt="image" src="https://github.com/user-attachments/assets/f3777454-1520-4566-a2e4-9ec091b99fb9" />
-
+<img width="1918" height="853" alt="image" src="https://github.com/user-attachments/assets/c7a1a4dd-cd74-449b-a4fb-55d0879f73b1" />
 
 
 
