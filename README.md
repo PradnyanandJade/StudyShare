@@ -8,7 +8,7 @@ notes
 <img width="863" height="645" alt="image" src="https://github.com/user-attachments/assets/b436eb72-53e2-4cd1-aacd-46eac153be08" />
 
 
-## Screenshot
+# Screenshots
 
 ## Student Login
 <img width="1918" height="866" alt="image" src="https://github.com/user-attachments/assets/4ee2fa4f-9286-4acd-87c7-c5d9826510c4" />
