@@ -1,13 +1,12 @@
 # StudyShare 
 A role-based web app where teachers manage classes and notes, and students access enrolled class notes.  
 Implemented secure JWT authentication with refresh tokens and a production-ready backend.
-- Students 
--- Support peers by sharing your notes
--- Earn exciting rewards from teachers
-- Teachers
-- Upload Notes For Students
--- Check Notes Provided By Students
--- Provide Rewards To Students
+Students : 
+- Support peers by sharing your notes
+- Earn exciting rewards from teachers
+Teachers :
+- Check Notes Provided By Students
+- Provide Rewards To Students
 
 
 ## Class Diagram
