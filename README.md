@@ -3,7 +3,7 @@ A role-based web app where teachers manage classes and notes, and students acces
 Implemented secure JWT authentication with refresh tokens and a production-ready backend.
 
 
-# Directory Structure
+## Directory Structure
 ```text
 Frontend
  ├── User Interface (React)
