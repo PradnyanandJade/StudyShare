@@ -11,7 +11,7 @@ function Header(){
     <div className="fixed bg-white dark:bg-gray-950  top-0 w-full h-fit white:bg-red-500 py-4 px-15 max-md:px-3 shadow-sm dark:border-b-1 dark:border-white z-100">
         <div className="flex flex-row justify-between items-center">
             <div>
-                <div className="text-black dark:text-white font-medium text-xl">📚 Classroom</div>
+                <div className="text-black dark:text-white font-medium text-xl">📚 StudyShare</div>
             </div>
             <div className="flex flex-row gap-5 text-black dark:text-white">
                 <div onClick={()=>{
