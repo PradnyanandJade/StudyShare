@@ -2,12 +2,15 @@ import React, { useEffect, useRef, useState } from "react";
 import {passwordImg,usernameImg,eye_onImg,eye_offImg,settingImg, teacherImg, studentImg} from '../src/assets/index.jsx';
 import { useTheme } from "../Context/ThemeContext";
 import {useAuth} from '../Context/AuthContext.jsx';
+import {darkMode,lightMode,logoutImg} from '../src/assets/index.jsx';
+
 
 function Login({setCurrentPage,setShowPopup,setShowPopupMessage}){
-    const {themeMode} = useTheme();
+    const {themeMode,darkTheme, lightTheme} = useTheme();
     const [role,setRole] = useState("student");
     const [showPassword,setShowPassword]=useState(false);
     const checkBoxRef=useRef();
+
     const {auth,setAuth,authorize,unauthorize,login,loading,error,setError} = useAuth();
 
     const [username,setUsername]=useState("");
@@ -127,7 +130,14 @@ function Login({setCurrentPage,setShowPopup,setShowPopupMessage}){
         )
     }
     return(
-        <div className="h-screen max-md:h-fit w-full flex justify-center items-center p-15 max-md:py-8 px-1 max-md:px-2">
+        <div className="h-screen max-md:h-fit w-full flex justify-center items-center p-15 max-md:py-8 px-1 max-md:px-2"
+        >
+            <div onClick={()=>{
+                themeMode==="dark"?lightTheme():darkTheme()
+            }}  className="cursor-pointer hover:text-blue-600 duration-100 absolute top-20 max-md:top-0.5">
+                <img src={themeMode==="dark"?lightMode:darkMode} className="h-7"></img>
+            </div>
+
             <div className="p-5 shadow-lg border-1 border-gray-200 dark:border-gray-700 rounded-xl dark:black grid grid-cols-2  max-md:grid-cols-1 gap-5 max-md:gap-8">
                 <div className="animate-[fadeInStudent_1s_ease-in-out_forwards]">
                     <div className="grid grid-cols-2 grid-rows-2 gap-2 p-3">

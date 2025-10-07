@@ -3,14 +3,13 @@ import axios from "axios";
 import { useAuth } from "../Context/AuthContext.jsx";
 
 function HomeTeacher() {
-    const { user } = useAuth();
+    const { user,unauthorize } = useAuth();
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
     const [classes, setClasses] = useState([]);
     const [selectedClass, setSelectedClass] = useState(null);
     const [students, setStudents] = useState([]);
     const [notes, setNotes] = useState([]);
-
     const [newClassName, setNewClassName] = useState("");
     const [newClassCode, setNewClassCode] = useState("");
     const [addStudentUsername, setAddStudentUsername] = useState("");
@@ -30,22 +29,27 @@ function HomeTeacher() {
     };
 
     // Fetch students + notes for a class
-    const fetchClassDetails = async (class_code) => {
+   const fetchClassDetails = async (class_code) => {
         try {
-            const [studentsRes, notesRes] = await Promise.all([
-                axios.get(`${BACKEND_URL}class/getStudentsOfClass`, {
-                    params: { class_code },
-                    withCredentials: true,
-                }),
-                axios.get(`${BACKEND_URL}notes/all`, {
-                    params: { class_code },
-                    withCredentials: true,
-                }),
-            ]);
+            const studentsRes = await axios.get(`${BACKEND_URL}class/getStudentsOfClass`, {
+                params: { class_code },
+                withCredentials: true,
+            });
             setStudents(studentsRes.data.data || []);
+
+            const notesRes = await axios.get(`${BACKEND_URL}notes/all`, {
+                params: { class_code },
+                withCredentials: true,
+            });
             setNotes(notesRes.data.data || []);
+
         } catch (err) {
-            console.error(err);
+             if (err.response?.status === 401 || err.response?.status === 403) {
+                    unauthorize();  // from useAuth()
+            } else {
+                console.error("Error fetching classes:", err);
+            }
+            console.error("Error fetching class details:", err);
         }
     };
 
@@ -205,6 +209,7 @@ function HomeTeacher() {
 
                     {/* Students with notes */}
                     <div className="grid gap-4">
+
                         {students.map(s => (
                             <div
                                 key={s.id}

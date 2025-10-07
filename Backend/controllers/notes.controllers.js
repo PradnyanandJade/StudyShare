@@ -105,7 +105,6 @@ export const removeRequestInClass = async(req,res) =>{
 export const getNotesInClass = async (req,res) => {
     try {
         const class_code=req.query.class_code;
-
         const [classRow] = await db.query("SELECT class_id FROM classes WHERE class_code = ?", [class_code]);
         if (!classRow || classRow.length === 0) {
             return res.status(404).json({ success: false, message: "Class not found" });

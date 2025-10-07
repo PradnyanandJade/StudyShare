@@ -5,7 +5,7 @@ import StudentClassView from "./StudentsClassView.jsx";
 
 function Home() {
     const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
-    const { user } = useAuth();
+    const { user,unauthorize } = useAuth();
     const [classesData, setClassesData] = useState([]);
     const [selectedClass, setSelectedClass] = useState(null);
     const [students, setStudents] = useState([]);
@@ -21,7 +21,11 @@ function Home() {
                 });
                 setClassesData(res.data?.data || []);
             } catch (err) {
-                console.error("Error fetching classes:", err);
+                 if (err.response?.status === 401 || err.response?.status === 403) {
+                    unauthorize();  // from useAuth()
+                } else {
+                    console.error("Error fetching classes:", err);
+                }
             }
         };
         fetchClasses();
@@ -36,7 +40,11 @@ function Home() {
             });
             setStudents(res.data?.data || []);
         } catch (err) {
-            console.error("Error fetching students:", err);
+                if (err.response?.status === 401 || err.response?.status === 403) {
+                    unauthorize();  // from useAuth()
+                } else {
+                    console.error("Error fetching classes:", err);
+                }
         }
     };
 

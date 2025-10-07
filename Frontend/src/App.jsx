@@ -13,7 +13,6 @@ function App() {
   const [showPopup,setShowPopup] = useState(false);
   const [popupMessage,setShowPopupMessage] = useState("This is message"); 
 
-
   useEffect(() => {
     if (showPopup) {
       const timer = setTimeout(() => setShowPopup(false), 4000); // match animation duration
@@ -27,7 +26,7 @@ function App() {
       </div>
     )
   }
-
+  console.log(auth);
   return (
     <div className="w-full h-screen bg-white dark:bg-black">
       {showPopup&&popUpComponent()}

@@ -4,180 +4,239 @@ import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
 
-export const registerUser = async (req , res) => {
+
+const generateTokens = (user) => {
+    const payload = { user_id: user.id, username: user.username, role: user.role };
+    const accessToken = jwt.sign(payload, process.env.JWT_SECRET, {
+        expiresIn: process.env.JWT_TOKEN_DURATION_STRING || '15m',
+    });
+    const refreshToken = jwt.sign(payload, process.env.JWT_REFRESH_SECRET, {
+        expiresIn: process.env.JWT_REFRESH_TOKEN_DURATION_STRING || '7d',
+    });
+    return { accessToken, refreshToken };
+};
+
+
+export const registerUser = async (req, res) => {
     try {
-        const username = req.body.username;
-        const password = req.body.password;
-        const role = req.body.role;
-        if(!username || !password || !role){
-            return res.status(403).json({
-                success:false,
-                message:"All fields are compulsory to fill before requesting backend"
-            });
+        const { username, password, role } = req.body;
+        if (!username || !password || !role) {
+            return res.status(400).json({ success: false, message: 'All fields are required' });
         }
-        const [rows] = await db.query('SELECT * FROM users WHERE username=?',[username]);
-        if(rows.length>0){
-            return res.status(403).json({
-                success : false,
-                message:"User with given username already found. Choose Different Username."
-            });
+
+        const [existingUser] = await db.query('SELECT * FROM users WHERE username=?', [username]);
+        if (existingUser.length > 0) {
+            return res.status(409).json({ success: false, message: 'Username already taken' });
         }
-        const hashPassword = await bcrypt.hash(password,10);
-        const[result] = await db.query("INSERT INTO users(username,password,role) VALUES(?,?,?)",[username,hashPassword,role]);
-        const user_id = result.insertId;
-        const jwt_token = await jwt.sign({
-            username:username,
-            user_id:user_id,
-            role:role
-        },process.env.JWT_SECRET,{expiresIn:process.env.JWT_TOKEN_DURATION_STRING});
-        const jwt_refresh_token = await jwt.sign({
-            username:username,
-            user_id:user_id,
-            role:role
-        },process.env.JWT_REFRESH_SECRET,{expiresIn:process.env.JWT_REFRESH_TOKEN_DURATION_STRING});
-        res.cookie("token",jwt_token,{
-            httpOnly:true, // cannot be accessed via JS
-            secure:process.env.NODE_ENV === "production", // set true in production with HTTPS
-            sameSite:'strict',// CSRF protection
-            maxAge:15*60*1000 // 15min
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const [result] = await db.query(
+            'INSERT INTO users(username, password, role) VALUES (?, ?, ?)',
+            [username, hashedPassword, role]
+        );
+
+        const user = { id: result.insertId, username, role };
+        const { accessToken, refreshToken } = generateTokens(user);
+
+        // Store refresh token in DB (optional, for logout/invalidation)
+        await db.query('UPDATE users SET refresh_token=? WHERE id=?', [refreshToken, user.id]);
+
+        res.cookie('token', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: parseInt(process.env.JWT_COOKIE_MAX_AGE, 10) 
         });
-        res.cookie("refresh_token",jwt_refresh_token,{
-            httpOnly:true, // cannot be accessed via JS
-            secure:process.env.NODE_ENV === "production", // set true in production with HTTPS
-            sameSite:'strict',// CSRF protection
-            maxAge:7*24*60*60*1000 // 7day
+
+        res.cookie('refresh_token', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: parseInt(process.env.JWT_REFRESH_COOKIE_MAX_AGE, 10) 
         });
-        return res.status(200).json({
-            success:true,
-            message:"User registered successfully",
-            user_id:user_id,
-            username:username
+
+        return res.status(201).json({
+            success: true,
+            message: 'User registered successfully',
+            user: { id: user.id, username, role },
         });
     } catch (error) {
-        return res.status(500).json({
-            success:false,
-            message:"Internal Server Error - "+error
-        });
+        return res.status(500).json({ success: false, message: 'Server Error: ' + error.message });
     }
-}
+};
 
 
-export const loginUser = async (req , res) => {
+export const loginUser = async (req, res) => {
     try {
-        const username = req.body.username;
-        const password = req.body.password;
-        const role = req.body.role;
-        if(!username || !password || !role){
-            return res.status(403).json({
-                success:false,
-                message:"All fields are compulsory to fill before requesting backend"
-            });
-        }
-        const [rows] = await db.query("SELECT * FROM users WHERE username=?",[username]);
-        if(rows.length == 0){
-            return res.status(404).json({
-                success:false,
-                message:"There is no user registered with given username"
-            });
-        }
-        if(role!=rows[0].role){
-            return res.status(403).json({
-                success:false,
-                message:"Username is not suitable for given role"
-            });
-        }
-        const hashedPassword = rows[0].password;
-        const isCorrectPassword = await bcrypt.compare(password,hashedPassword);
-        if(!isCorrectPassword){
-            return res.status(400).json({
-                success:false,
-                message:"Incorrect Password"
-            });
-        }
-        const jwt_token = await jwt.sign({
-            username:username,
-            user_id:rows[0].id,
-            role:role
-        },process.env.JWT_SECRET,{expiresIn:process.env.JWT_TOKEN_DURATION_STRING});
-        const jwt_refresh_token = await jwt.sign({
-            username:username,
-            user_id:rows[0].id,
-            role:role
-        },process.env.JWT_REFRESH_SECRET,{expiresIn:process.env.JWT_REFRESH_TOKEN_DURATION_STRING});
-        res.cookie("token",jwt_token,{
-            httpOnly:true,
-            secure:process.env.NODE_ENV === "production",
-            sameSite:'strict',
-            maxAge:15*60*1000
-        });
-        res.cookie("refresh_token",jwt_refresh_token,{
-            httpOnly:true,
-            secure:process.env.NODE_ENV === "production",
-            sameSite:'strict',
-            maxAge:7*24*60*60*1000
-        });
-        return res.status(200).json({
-            success:true,
-            user_id:rows[0].id,
-            username:username,
-            message:"Logged In Successfully"
-        });
-    } catch (error) {
-        return res.status(400).json({
-            success:false,
-            message : '(/loginUser) failed : '+error
-        });
-    }
-}
+        const { username, password, role } = req.body;
 
-export const logoutUser = (req , res) => {
-    res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // cookie only sent over HTTPS in prod
-    sameSite: "strict",
-  });
-  res.clearCookie("refresh_token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // cookie only sent over HTTPS in prod
-    sameSite: "strict",
-  });
-  return res.status(200).json({
-    success:true, 
-    message: "Logged out successfully" 
-});
-}
+        const [rows] = await db.query('SELECT * FROM users WHERE username=?', [username]);
+        if (rows.length === 0) return res.status(404).json({ message: 'User not found' });
 
-export const refreshToken = async (req , res) => {
-    try {
-        const refresh_token = req.cookies.refresh_token;
-        if (!refresh_token) return res.status(401).json({
-            success:false, 
-            message: "No refresh token" 
-            });
-        let user;
-        try {
-            user = jwt.verify(refresh_token, process.env.JWT_REFRESH_SECRET);
-        } catch (err) {
-            return res.status(403).json({ 
-                success:false,
-                message: "Invalid refresh token" 
-            });
-        }
-        const jwt_token=jwt.sign(user,process.env.JWT_SECRET,{expiresIn:process.env.JWT_TOKEN_DURATION_STRING});
-        res.cookie('token',jwt_token,{
-            httpOnly:true,
-            secure:process.env.NODE_ENV==="production",
-            sameSite:'strict',
-            maxAge:15*60*1000
-        })
+        const user = rows[0];
+        if (user.role !== role)
+            return res.status(403).json({ message: 'Incorrect role for this username' });
+
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) return res.status(400).json({ message: 'Invalid password' });
+
+        const { accessToken, refreshToken } = generateTokens(user);
+
+        // Store refresh token
+        await db.query('UPDATE users SET refresh_token=? WHERE id=?', [refreshToken, user.id]);
+
+        res.cookie('token', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge:  parseInt(process.env.JWT_COOKIE_MAX_AGE, 10)
+            
+        });
+
+        res.cookie('refresh_token', refreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge:  parseInt(process.env.JWT_REFRESH_COOKIE_MAX_AGE, 10) 
+        });
+
         res.status(200).json({
-            success:true,
-            message:"New token generated from refresh token"
+            success: true,
+            message: 'Logged in successfully',
+            user: { id: user.id, username: user.username, role: user.role },
         });
-    } catch (error) {
-        return res.status(404).json({
-            success:false,
-            message:"(/refreshToken) failed : "+error
-        })
+    } catch (err) {
+        res.status(500).json({ message: 'Login failed: ' + err.message });
     }
-}
+};
+
+export const logoutUser = async (req, res) => {
+    try {
+        console.log("Logging out")
+        const { user_id } = req.user;
+        // Invalidate the refresh token in the database
+        await db.query('UPDATE users SET refresh_token=NULL WHERE id=?', [user_id]);
+
+        // MUST include the same options used to set the cookie
+        const cookieOptions = {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+        };
+
+        res.clearCookie('token', cookieOptions);
+        res.clearCookie('refresh_token', cookieOptions);
+
+        res.status(200).json({ success: true, message: 'Logged out successfully' });
+    } catch (err) {
+        res.status(500).json({ message: 'Logout failed: ' + err.message });
+    }
+};
+
+export const refreshToken = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refresh_token;
+        if (!refreshToken) return res.status(401).json({ message: 'No refresh token provided' });
+
+        // Check if token exists in DB
+        const [userRows] = await db.query('SELECT * FROM users WHERE refresh_token=?', [refreshToken]);
+        if (userRows.length === 0) return res.status(403).json({ message: 'Invalid refresh token' });
+
+        const user = userRows[0];
+
+        // Verify and rotate
+        jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+
+        const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+
+        // Update new refresh token in DB
+        await db.query('UPDATE users SET refresh_token=? WHERE id=?', [newRefreshToken, user.id]);
+
+        // Set new cookies
+        res.cookie('token', accessToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge:  parseInt(process.env.JWT_COOKIE_MAX_AGE, 10) 
+        });
+
+        res.cookie('refresh_token', newRefreshToken, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge:  parseInt(process.env.JWT_REFRESH_COOKIE_MAX_AGE, 10)
+        });
+
+        return res.json({ success: true, message: 'Access token refreshed successfully' });
+    } catch (error) {
+        return res.status(403).json({ message: 'Refresh failed: ' + error.message });
+    }
+};
+
+
+export const checkAuth = async (req, res) => {
+    try {
+        const token = req.cookies.token;
+        if (!token) return res.status(401).json({ success: false, message: "No token provided" });
+
+        try {
+            // Verify the token
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            // If verification is successful, send success response
+            return res.json({ success: true, user: decoded });
+        } catch (err) {
+            // Token has expired
+            if (err.name === "TokenExpiredError") {
+                const refreshToken = req.cookies.refresh_token;
+                if (!refreshToken) return res.status(401).json({ success: false, message: "Session expired, no refresh token" });
+
+                try {
+                    const decodedRefresh = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
+                    const [userRows] = await db.query("SELECT * FROM users WHERE id=? AND refresh_token=?", [decodedRefresh.user_id, refreshToken]);
+
+                    if (userRows.length === 0) {
+                        // Refresh token is invalid or not found
+                        res.clearCookie('token');
+                        res.clearCookie('refresh_token');
+                        return res.status(401).json({ success: false, message: "Invalid refresh token" });
+                    }
+
+                    const user = userRows[0];
+                    const { accessToken, refreshToken: newRefreshToken } = generateTokens(user);
+
+                    // Update new refresh token in DB
+                    await db.query("UPDATE users SET refresh_token=? WHERE id=?", [newRefreshToken, user.id]);
+
+                    // Set new cookies
+                    res.cookie("token", accessToken, {
+                        httpOnly: true,
+                        sameSite: "strict",
+                        secure: process.env.NODE_ENV === "production",
+                        maxAge: parseInt(process.env.JWT_COOKIE_MAX_AGE, 10),
+                    });
+                    res.cookie("refresh_token", newRefreshToken, {
+                        httpOnly: true,
+                        sameSite: "strict",
+                        secure: process.env.NODE_ENV === "production",
+                        maxAge: parseInt(process.env.JWT_REFRESH_COOKIE_MAX_AGE, 10),
+                    });
+
+                    // Token refreshed successfully
+                    return res.json({ success: true, user: decodedRefresh });
+                } catch (refreshErr) {
+                    // Refresh token expired or is invalid
+                    res.clearCookie('token');
+                    res.clearCookie('refresh_token');
+                    return res.status(401).json({ success: false, message: "Invalid refresh token" });
+                }
+            }
+
+            // Some other error occurred with the token
+            return res.status(401).json({ success: false, message: "Invalid or expired token" });
+        }
+    } catch (err) {
+        // Handle unexpected errors
+        return res.status(500).json({ success: false, message: "Server error: " + err.message });
+    }
+};
+
