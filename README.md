@@ -1,5 +1,7 @@
-# StudyShare
-StudyShare– Classroom Notes Management System Developed a role-based web application enabling seamless collaboration between teachers and students.
+#StudyShare 
+A role-based web app where teachers manage classes and notes, and students access enrolled class notes.  
+Implemented secure JWT authentication with refresh tokens and a production-ready backend.
+
 
 
 ```text
